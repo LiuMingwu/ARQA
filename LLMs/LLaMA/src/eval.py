@@ -102,14 +102,6 @@ def eval_result(predict_file, cal_f1=True, topk=1):
                 continue
             prediction = data.get('prediction')
             prediction = list_k(prediction, k=topk)
-            input_tokens = data.get('input_tokens')
-            output_tokens = data.get('output_tokens')
-            if isinstance(input_tokens, (int, float)):
-                input_token_counts.append(input_tokens)
-            if isinstance(output_tokens, (int, float)):
-                output_token_counts.append(output_tokens)
-            if isinstance(input_tokens, (int, float)) and isinstance(output_tokens, (int, float)):
-                total_token_counts.append(input_tokens + output_tokens)
 
             answer = data.get('ground_truth')
             qtype_raw = data.get('qtype', data.get('question_type', data.get('q_type', 'unknown')))
@@ -150,8 +142,6 @@ def eval_result(predict_file, cal_f1=True, topk=1):
                     'answer_type': answer_type,
                     'time_level': time_level,
                     'hit': hit,
-                    'input_tokens': input_tokens,
-                    'output_tokens': output_tokens,
                 }, ensure_ascii=False) + '\n')
 
             q_counts[qtype] = q_counts.get(qtype, 0) + 1
@@ -252,7 +242,7 @@ def main():
             subgraph = id2sub[id]
             qlabel = data.get('qlabel', data.get('q_label', None))
 
-            predict, _ = chat_model.chat(query, subgraph)
+            predict = chat_model.chat(query, subgraph)[0]
 
             answer_type = data.get('answer_type', data.get('ans_type', None))
             qtype = data.get('qtype', data.get('question_type', data.get('q_type', None)))
@@ -263,9 +253,6 @@ def main():
                 "input": query,
                 "ground_truth": answer,
                 "prediction": predict,
-                "input_tokens": input_tokens,
-                "output_tokens": output_tokens,
-                "total_tokens": input_tokens + output_tokens,
             }
             if qlabel is not None:
                 result['qlabel'] = qlabel
